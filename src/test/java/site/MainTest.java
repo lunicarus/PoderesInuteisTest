@@ -11,6 +11,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 class MainTest {
 
     private WebDriver driver;
@@ -27,23 +30,18 @@ class MainTest {
     }
 
     @Test
-    @DisplayName("Should provide error message if login and password are empty")
-    void shouldProvideErrorMessageIfLoginAndPasswordAreEmpty() {
+    @DisplayName("Should access power register page")
+    void shouldAccessPowerRegisterPage() throws InterruptedException{
         driver.get("https://site-tc1.vercel.app/");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.tagName("a")));
-
+        WebElement link = wait.until(ExpectedConditions.
+                elementToBeClickable(new By.ByXPath("/html/body/div/body/div/header/nav/ul/li/a")));
         link.click();
+        final WebElement element = driver.
+                findElement(By.xpath("/html/body/div/body/div[2]/div/div/form/div[1]/label"));
+        assertThat(element.getText()).isEqualTo("Nome do Poder:");
         driver.close();
 
-    }
-    @Test
-    @DisplayName("Should get the search bar from Google")
-    void shouldGetTheSearchBarFromGoogle() {
-        driver.get("https://www.google.com");
-        final WebElement searchBar = driver.findElement(By.className("gLFyf"));
-        final String accessibleName = searchBar.getAccessibleName();
-        System.out.println(accessibleName);
     }
 }
