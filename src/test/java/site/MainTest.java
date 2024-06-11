@@ -29,18 +29,39 @@ class MainTest {
         WebDriverManager.firefoxdriver().quit();
     }
 
-    @Test
-    @DisplayName("Should access power register page")
-    void shouldAccessPowerRegisterPage() throws InterruptedException{
-        HomePage homePage = new HomePage(driver);
+    @Nested
+    class HomePageTest{
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        HomePage homePage;
 
-        WebElement link = wait.until(ExpectedConditions.
-                elementToBeClickable(homePage.getCadastrarButtom()));
-        link.click();
+        @BeforeEach
+        void setUp(){
+            homePage = new HomePage(driver);
+        }
+        @Test
+        @DisplayName("Should access power register page")
+        void shouldAccessPowerRegisterPage() throws InterruptedException{
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        driver.close();
+            WebElement link = wait.until(ExpectedConditions.
+                    elementToBeClickable(homePage.getCadastrarButtom()));
+            link.click();
+
+            driver.close();
+
+        }
+    }
+    @Nested
+    class CadastrarPoderPageTest{
+
+    }
+    @Nested
+    class EditarPoderPageTest{
+
+    }
+
+    @Nested
+    class DeletarPoderPageTest{
 
     }
 }
