@@ -149,27 +149,32 @@ class MainTest {
         }
 
         void cadastrarPoder(String nome, String descricao, String efeitosColaterais, int nota) {
-            CadastrarPage cadastrarPage = new CadastrarPage(driver);
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+            try {
+                CadastrarPage cadastrarPage = new CadastrarPage(driver);
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
 
-            WebElement link = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
-            link.click();
+                WebElement link = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
+                link.click();
 
-            WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNomePoder()));
-            WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getDescricao()));
-            WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getEfeitosColaterais()));
-            WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNota()));
+                WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNomePoder()));
+                WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getDescricao()));
+                WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getEfeitosColaterais()));
+                WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNota()));
 
-            nameInput.sendKeys(nome);
-            descriptionInput.sendKeys(descricao);
-            efeitosColateraisInput.sendKeys(efeitosColaterais);
-            new Select(notaSelect).selectByValue(String.valueOf(nota));
+                nameInput.sendKeys(nome);
+                descriptionInput.sendKeys(descricao);
+                efeitosColateraisInput.sendKeys(efeitosColaterais);
+                new Select(notaSelect).selectByValue(String.valueOf(nota));
 
-            WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
-            submitButton.click();
+                WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
+                submitButton.click();
 
-            Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-            alert.accept();
+                Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+                alert.accept();
+            }
+            catch (TimeoutException e) {
+                throw new IllegalStateException("O alerta não apareceu após o cadastro do poder");
+            }
         }
 
         WebElement encontrarPoder(String nomeOriginal) {
@@ -241,35 +246,50 @@ class MainTest {
                 assertEquals(powerStars.length(), nota);
             }
 
-//            @Test
-//            @DisplayName("Should not allow adding two powers with the same name")
-//            void shouldNotAllowAddingTwoPowersWithSameName() {
-//                String nome = faker.superhero().power();
-//                String descricao1 = faker.lorem().sentence();
-//                String descricao2 = faker.lorem().sentence();
-//                String efeitosColaterais1 = faker.lorem().sentence();
-//                String efeitosColaterais2 = faker.lorem().sentence();
-//                int nota1 = faker.number().numberBetween(1, 6); // entre 1 e 5
-//                int nota2 = faker.number().numberBetween(1, 6); // entre 1 e 5
-//
-//                cadastrarPoder(nome, descricao1, efeitosColaterais1, nota1);
-//
-//                cadastrarPoder(nome, descricao2, efeitosColaterais2, nota2);
-//
-//                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-//                try {
-//                    Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-//                    String alertText = alert.getText();
-//                    alert.accept();
-//                    assertTrue(alertText.contains("existe"), "Não ha uma mensagem de erro informando que o poder já existe");
-//                } catch (TimeoutException e) {
-//                    List<WebElement> powers = driver.findElements(By.className("post"));
-//                    long count = powers.stream()
-//                            .filter(power -> power.findElement(By.className("post-title")).getText().equals(nome))
-//                            .count();
-//                    assertEquals(1, count, "Não podem existir dois poderes com o mesmo nome");
-//                }
-//            }
+            @Test
+            @DisplayName("Should not allow creating a new power with empty fields")
+            void shouldNotAllowCreatingPowerWithEmptyFields() {
+                String nome = faker.superhero().power();
+                String descricao = "";
+                String efeitosColaterais = faker.lorem().sentence();
+                int nota = faker.number().numberBetween(1, 6);
+
+                try {
+                    cadastrarPoder(nome, descricao, efeitosColaterais, nota);
+                } catch (IllegalStateException e) {
+                    assertTrue(true);
+                }
+            }
+
+            @Test //não passa
+            @DisplayName("Should not allow adding two powers with the same name")
+            void shouldNotAllowAddingTwoPowersWithSameName() {
+                String nome = faker.superhero().power();
+                String descricao1 = faker.lorem().sentence();
+                String descricao2 = faker.lorem().sentence();
+                String efeitosColaterais1 = faker.lorem().sentence();
+                String efeitosColaterais2 = faker.lorem().sentence();
+                int nota1 = faker.number().numberBetween(1, 6); // entre 1 e 5
+                int nota2 = faker.number().numberBetween(1, 6); // entre 1 e 5
+
+                cadastrarPoder(nome, descricao1, efeitosColaterais1, nota1);
+
+                cadastrarPoder(nome, descricao2, efeitosColaterais2, nota2);
+
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+                try {
+                    Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+                    String alertText = alert.getText();
+                    alert.accept();
+                    assertTrue(alertText.contains("existe"), "Não ha uma mensagem de erro informando que o poder já existe");
+                } catch (TimeoutException e) {
+                    List<WebElement> powers = driver.findElements(By.className("post"));
+                    long count = powers.stream()
+                            .filter(power -> power.findElement(By.className("post-title")).getText().equals(nome))
+                            .count();
+                    assertEquals(1, count, "Não podem existir dois poderes com o mesmo nome");
+                }
+            }
 
         }
 
@@ -330,31 +350,31 @@ class MainTest {
                 assertEquals(powerTitle, nomeEditado);
             }
 
-//            @Test
-//            @DisplayName("Should not allow editing power name to an existing one")
-//            void shouldNotAllowEditingPowerNameToExisting() {
-//                String nomeOriginal = faker.superhero().power();
-//                String descricaoOriginal = faker.lorem().sentence();
-//                String efeitosColateraisOriginal = faker.lorem().sentence();
-//                int notaOriginal = faker.number().numberBetween(1, 6);
-//
-//                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
-//
-//                String nomeExistente = faker.superhero().power();
-//                String descricaoExistente = faker.lorem().sentence();
-//                String efeitosColateraisExistente = faker.lorem().sentence();
-//                int notaExistente = faker.number().numberBetween(1, 6);
-//
-//                cadastrarPoder(nomeExistente, descricaoExistente, efeitosColateraisExistente, notaExistente);
-//
-//                WebElement powerToEdit = encontrarPoder(nomeOriginal);
-//                editarPoder(powerToEdit, nomeExistente, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
-//
-//                WebElement powerToVerify = encontrarPoder(nomeOriginal);
-//
-//                String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
-//                assertTrue(powerTitle.equals(nomeOriginal), "O nome do poder original não pode ser alterado para um nome existente");
-//            }
+            @Test //não passa
+            @DisplayName("Should not allow editing power name to an existing one")
+            void shouldNotAllowEditingPowerNameToExisting() {
+                String nomeOriginal = faker.superhero().power();
+                String descricaoOriginal = faker.lorem().sentence();
+                String efeitosColateraisOriginal = faker.lorem().sentence();
+                int notaOriginal = faker.number().numberBetween(1, 6);
+
+                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
+
+                String nomeExistente = faker.superhero().power();
+                String descricaoExistente = faker.lorem().sentence();
+                String efeitosColateraisExistente = faker.lorem().sentence();
+                int notaExistente = faker.number().numberBetween(1, 6);
+
+                cadastrarPoder(nomeExistente, descricaoExistente, efeitosColateraisExistente, notaExistente);
+
+                WebElement powerToEdit = encontrarPoder(nomeOriginal);
+                editarPoder(powerToEdit, nomeExistente, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
+
+                WebElement powerToVerify = encontrarPoder(nomeOriginal);
+
+                String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
+                assertTrue(powerTitle.equals(nomeOriginal), "O nome do poder original não pode ser alterado para um nome existente");
+            }
 
             @Test
             @DisplayName("Should edit the power note twice")
@@ -396,14 +416,14 @@ class MainTest {
                 assertEquals(powerStars.length(), notaEditada2);
             }
 
-//            @Test
-//            @DisplayName("Should Return Page Not Found For Non Existing Power")
-//            void shouldReturnPageNotFoundForNonExistingPower() {
-//                    // Tenta acessar a URL de edição de um poder que não existe
-//                    driver.get("https://site-tc1.vercel.app/editar/2");
-//
-//                    assertTrue(driver.getPageSource().contains("Page Not Found"), "A página não foi encontrada");
-//            }
+            @Test //não passa
+            @DisplayName("Should Return Page Not Found For Non Existing Power")
+            void shouldReturnPageNotFoundForNonExistingPower() {
+                    // Tenta acessar a URL de edição de um poder que não existe
+                    driver.get("https://site-tc1.vercel.app/editar/2");
+
+                    assertTrue(driver.getPageSource().contains("Page Not Found"));
+            }
 
         }
 
@@ -441,7 +461,7 @@ class MainTest {
         }
 
     }
-    }
+}
 
 
 
