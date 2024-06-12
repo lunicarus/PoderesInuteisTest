@@ -91,21 +91,23 @@ class MainTest {
             faker = new Faker();
         }
 
-        @AfterEach
-        void tearDown() {
-            driver.quit();
-        }
-
 //        private void createNewPower() {
 //
 //        }
 
         @Nested
         class CreateRead {
+            CadastrarPage cadastrarPage;
 
+            @BeforeEach
+            void setUp(){
+                cadastrarPage  = new CadastrarPage(driver);
+            }
             @Test
             @DisplayName("Should create a new power")
             void shouldCreateNewPower() {
+
+
                 WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
 
                 WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
@@ -116,17 +118,17 @@ class MainTest {
                 String efeitosColaterais = faker.lorem().sentence();
                 int nota = faker.number().numberBetween(1, 6); // entre 1 e 5
 
-                WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-                WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
-                WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
-                WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+                WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNomePoder()));
+                WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getDescricao()));
+                WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getEfeitosColaterais()));
+                WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNota()));
 
                 nameInput.sendKeys(nome);
                 descriptionInput.sendKeys(descricao);
                 efeitosColateraisInput.sendKeys(efeitosColaterais);
                 new Select(notaSelect).selectByValue(String.valueOf(nota));
 
-                WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
+                WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
                 submitButton.click();
 
                 Alert alert = wait.until(ExpectedConditions.alertIsPresent());
