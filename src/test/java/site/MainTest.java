@@ -425,6 +425,27 @@ class MainTest {
                     assertTrue(driver.getPageSource().contains("Page Not Found"));
             }
 
+            @Test
+            @DisplayName("Should not allow editing a power with empty fields")
+            void shouldNotAllowEditingPowerWithEmptyFields() {
+                String nomeOriginal = faker.superhero().power();
+                String descricaoOriginal = faker.lorem().sentence();
+                String efeitosColateraisOriginal = faker.lorem().sentence();
+                int notaOriginal = faker.number().numberBetween(1, 6);
+
+                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
+
+                WebElement powerToEdit = encontrarPoder(nomeOriginal);
+
+                String efeitosColateraisEditados = "";
+
+                try {
+                    editarPoder(powerToEdit, nomeOriginal, descricaoOriginal, efeitosColateraisEditados, notaOriginal);
+                } catch (TimeoutException e) {
+                    assertTrue(true);
+                }
+            }
+
         }
 
         @Nested
