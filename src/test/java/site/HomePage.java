@@ -1,6 +1,6 @@
 package site;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Point;
+import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebDriver;
 public class HomePage {
     protected WebDriver driver;
@@ -12,26 +12,17 @@ public class HomePage {
         this.driver = driver;
         driver.get("https://site-tc1.vercel.app/");
     }
-    public String getHeaderText() {
-        return driver.findElement(header).getText();
-    }
-    public String getCadastrarButtomText() {
-        return driver.findElement(cadastrarButtom).getText();
-    }
 
     public By getCadastrarButtom() {
         return cadastrarButtom;
     }
-    public By getHeader() {
-        return header;
+    public Rectangle getHeaderLocation(){
+        return driver.findElement(header).getRect();
     }
-    public Point getHeaderLocation(){
-        return driver.findElement(header).getLocation();
+    public Rectangle getCadastrarButtomLocation(){
+        return driver.findElement(cadastrarButtom).getRect();
     }
-    public Point getCadastrarButtomLocation(){
-        return driver.findElement(cadastrarButtom).getLocation();
-    }
-    public Point getPowersListLocation(){
-        return driver.findElement(powersList).getLocation();
+    public Rectangle getPowersListLocation(){
+        return driver.findElement(powersList).getRect();
     }
 }
