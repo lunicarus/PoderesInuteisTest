@@ -3,10 +3,7 @@ package site;
 import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 //import org.assertj.core.api.SoftAssertions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -17,54 +14,79 @@ import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
-
     private WebDriver driver;
-    private Faker faker;
-
-//    @BeforeEach
-//    void setUp(){
-//        WebDriverManager.firefoxdriver().setup();
-//        driver = new FirefoxDriver();
-//    }
-//
-//    @AfterEach
-//    void tearDown(){
-//        WebDriverManager.firefoxdriver().quit();
-//    }
-
+    @BeforeEach
+    void setUp() {
+        WebDriverManager.firefoxdriver().setup();
+        driver = new FirefoxDriver();
+    }
+    @AfterEach
+    void tearDown() {
+        driver.quit();
+    }
     @Nested
-    class HomePageTest{
-
+    class HomePageTestUI{
         HomePage homePage;
-
         @BeforeEach
         void setUp(){
             homePage = new HomePage(driver);
         }
         @Test
         @DisplayName("Should access power register page")
-        void shouldAccessPowerRegisterPage() throws InterruptedException{
+        void shouldAccessPowerRegisterPage() {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-            WebElement link = wait.until(ExpectedConditions.
-                    elementToBeClickable(homePage.getCadastrarButtom()));
+            WebElement link = wait.until(ExpectedConditions.elementToBeClickable(homePage.getCadastrarButtom()));
             link.click();
 
-            driver.close();
+            String currentUrl = driver.getCurrentUrl();
+            assertThat(currentUrl).contains("/cadastro");
+
+        }
+        @Test
+        @DisplayName("test if components of page overlap")
+        void componentsShouldNotOverlap() {
+            Dimension[] sizes = {
+                    new Dimension(320, 480),
+                    new Dimension(480, 320),
+                    new Dimension(768, 1024),
+                    new Dimension(1024, 768),
+                    new Dimension(1366, 768),
+                    new Dimension(1920, 1080)
+            };
+            for (Dimension size : sizes) {
+                driver.manage().window().setSize(size);
+                driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
+
+                assertNotSame(homePage.getHeaderLocation(), homePage.getCadastrarButtomLocation());
+
+                assertNotSame(homePage.getPowersListLocation(), homePage.getCadastrarButtomLocation());
+
+                assertNotSame(homePage.getHeaderLocation(), homePage.getPowersListLocation());
+            }
 
         }
     }
 
     @Nested
+    class CadastrarPageTestUI{
+        CadastrarPage cadastrarPage;
+
+        @BeforeEach
+        void setUp(){
+            cadastrarPage  = new CadastrarPage(driver);
+        }
+
+    }
+
+    @Nested
     class CRUDtests {
+        private Faker faker;
         @BeforeEach
         void setUp() {
-            WebDriverManager.firefoxdriver().setup();
-            driver = new FirefoxDriver();
             driver.get("https://site-tc1.vercel.app/");
             faker = new Faker();
         }
@@ -74,24 +96,12 @@ class MainTest {
             driver.quit();
         }
 
-        private void createNewPower() {
-
-        }
+//        private void createNewPower() {
+//
+//        }
 
         @Nested
         class CreateRead {
-            @Test
-            @DisplayName("Should access power register page")
-            void shouldAccessPowerRegisterPage() {
-
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-
-                WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
-                link.click();
-
-                String currentUrl = driver.getCurrentUrl();
-                assertThat(currentUrl).contains("/cadastro");
-            }
 
             @Test
             @DisplayName("Should create a new power")
@@ -462,7 +472,7 @@ class MainTest {
                     Alert deleteAlert = wait.until(ExpectedConditions.alertIsPresent());
                     deleteAlert.accept();
 
-                    assertTrue(deleteAlert != null, "O alerta de confirmação de exclusão foi aceito com sucesso.");
+                    assertNotNull(deleteAlert, "O alerta de confirmação de exclusão foi aceito com sucesso.");
 
                 }
             }
