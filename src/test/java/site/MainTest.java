@@ -349,40 +349,42 @@ class MainTest {
 
         }
 
-            @Nested
-            class Delete {
-                @Test
-                @DisplayName("Should delete a power")
-                void shouldDeletePower() {
-                    String nomeOriginal = faker.superhero().power();
-                    String descricaoOriginal = faker.lorem().sentence();
-                    String efeitosColateraisOriginal = faker.lorem().sentence();
-                    int notaOriginal = faker.number().numberBetween(1, 6);
+        @Nested
+        class Delete {
+            @Test
+            @DisplayName("Should delete a power")
+            void shouldDeletePower() {
+                String nomeOriginal = faker.superhero().power();
+                String descricaoOriginal = faker.lorem().sentence();
+                String efeitosColateraisOriginal = faker.lorem().sentence();
+                int notaOriginal = faker.number().numberBetween(1, 6);
 
-                    cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
+                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 
-                    WebElement powerToDelete = encontrarPoder(nomeOriginal);
+                WebElement powerToDelete = encontrarPoder(nomeOriginal);
 
-                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-                    WebElement deleteButton = powerToDelete.findElement(By.xpath(".//div[@class='post-actions']/button[@data-action='delete']"));
-                    deleteButton.click();
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+                WebElement deleteButton = powerToDelete.findElement(By.xpath(".//div[@class='post-actions']/button[@data-action='delete']"));
+                deleteButton.click();
 
-                    Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-                    alert.accept();
+                Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+                alert.accept();
 
-                    driver.navigate().refresh();
+                driver.navigate().refresh();
 
-                    assertThrows(AssertionError.class, () -> {
-                        try {
-                            encontrarPoder(nomeOriginal);
-                        } catch (TimeoutException e) {
-                            throw new AssertionError("O poder foi excluído");
-                        }
-                    });
-                }
+                assertThrows(AssertionError.class, () -> {
+                    try {
+                        encontrarPoder(nomeOriginal);
+                    } catch (TimeoutException e) {
+                        throw new AssertionError("O poder foi excluído");
+                    }
+                });
             }
         }
+
     }
+
+}
 
 
 
