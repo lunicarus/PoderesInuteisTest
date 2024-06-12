@@ -347,6 +347,15 @@ class MainTest {
                 assertTrue(powerStars.length() == notaEditada2);
             }
 
+//            @Test
+//            @DisplayName("Should Return Page Not Found For Non Existing Power")
+//            void shouldReturnPageNotFoundForNonExistingPower() {
+//                    // Tenta acessar a URL de edição de um poder que não existe
+//                    driver.get("https://site-tc1.vercel.app/editar/2");
+//
+//                    assertTrue(driver.getPageSource().contains("Page Not Found"), "A página não foi encontrada");
+//            }
+
         }
 
         @Nested
