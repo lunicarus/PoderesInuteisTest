@@ -74,6 +74,10 @@ class MainTest {
             driver.quit();
         }
 
+        private void createNewPower() {
+
+        }
+
         @Nested
         class CreateRead {
             @Test
@@ -465,3 +469,4 @@ class MainTest {
         }
     }
 }
+
