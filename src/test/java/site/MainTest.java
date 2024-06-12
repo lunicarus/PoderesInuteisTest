@@ -254,11 +254,9 @@ class MainTest {
                 String efeitosColaterais = faker.lorem().sentence();
                 int nota = faker.number().numberBetween(1, 6);
 
-                try {
+                assertThrows(IllegalStateException.class, () -> {
                     cadastrarPoder(nome, descricao, efeitosColaterais, nota);
-                } catch (IllegalStateException e) {
-                    assertTrue(true);
-                }
+                });
             }
 
             @Test //não passa
@@ -439,11 +437,9 @@ class MainTest {
 
                 String efeitosColateraisEditados = "";
 
-                try {
+                assertThrows(TimeoutException.class, () -> {
                     editarPoder(powerToEdit, nomeOriginal, descricaoOriginal, efeitosColateraisEditados, notaOriginal);
-                } catch (TimeoutException e) {
-                    assertTrue(true);
-                }
+                });
             }
 
         }
