@@ -75,7 +75,7 @@ class MainTest {
         }
 
         @Nested
-        class Create {
+        class CreateRead {
             @Test
             @DisplayName("Should access power register page")
             void shouldAccessPowerRegisterPage() {
@@ -304,7 +304,6 @@ class MainTest {
                 assertTrue(powerEditedFound, "O poder editado foi encontrado na lista.");
             }
 
-
             @Test
             @DisplayName("Should edit the power note twice")
             void shouldEditPowerNoteTwice() {
@@ -411,10 +410,58 @@ class MainTest {
                 assertTrue(powerEditedTwiceFound, "O poder foi encontrado na lista com a nota editada duas vezes");
             }
 
+            @Nested
+            class Delete {
 
+                @Test
+                @DisplayName("Should delete a power")
+                void shouldDeletePower() {
+                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
 
+                    WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
+                    link.click();
+
+                    String nomeOriginal = faker.superhero().power();
+                    String descricaoOriginal = faker.lorem().sentence();
+                    String efeitosColateraisOriginal = faker.lorem().sentence();
+                    int notaOriginal = faker.number().numberBetween(1, 6);
+
+                    WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
+                    WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
+                    WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
+                    WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+
+                    nameInput.sendKeys(nomeOriginal);
+                    descriptionInput.sendKeys(descricaoOriginal);
+                    efeitosColateraisInput.sendKeys(efeitosColateraisOriginal);
+                    new Select(notaSelect).selectByValue(String.valueOf(notaOriginal));
+
+                    WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
+                    submitButton.click();
+
+                    Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+                    alert.accept();
+
+                    driver.get("https://site-tc1.vercel.app/");
+
+                    WebElement powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
+                    List<WebElement> powers = powerList.findElements(By.className("post"));
+
+                    WebElement powerToDelete = powers.stream().filter(power -> {
+                        String powerTitle = power.findElement(By.className("post-title")).getText();
+                        return powerTitle.equals(nomeOriginal);
+                    }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
+
+                    WebElement deleteButton = powerToDelete.findElement(By.xpath(".//div[@class='post-actions']/button[@data-action='delete']"));
+                    deleteButton.click();
+
+                    Alert deleteAlert = wait.until(ExpectedConditions.alertIsPresent());
+                    deleteAlert.accept();
+
+                    assertTrue(deleteAlert != null, "O alerta de confirmação de exclusão foi aceito com sucesso.");
+
+                }
+            }
         }
-
-
     }
 }
