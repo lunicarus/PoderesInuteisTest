@@ -340,9 +340,6 @@ class MainTest {
 //
 //                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 //
-//                WebElement powerToEdit = encontrarPoder(nomeOriginal);
-//
-//
 //                String nomeExistente = faker.superhero().power();
 //                String descricaoExistente = faker.lorem().sentence();
 //                String efeitosColateraisExistente = faker.lorem().sentence();
@@ -350,9 +347,11 @@ class MainTest {
 //
 //                cadastrarPoder(nomeExistente, descricaoExistente, efeitosColateraisExistente, notaExistente);
 //
+//                WebElement powerToEdit = encontrarPoder(nomeOriginal);
 //                editarPoder(powerToEdit, nomeExistente, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 //
 //                WebElement powerToVerify = encontrarPoder(nomeOriginal);
+//
 //                String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
 //                assertTrue(powerTitle.equals(nomeOriginal), "O nome do poder original não pode ser alterado para um nome existente");
 //            }
