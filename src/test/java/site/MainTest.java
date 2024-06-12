@@ -18,22 +18,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
     private WebDriver driver;
+
     @BeforeEach
     void setUp() {
         WebDriverManager.firefoxdriver().setup();
         driver = new FirefoxDriver();
     }
+
     @AfterEach
     void tearDown() {
         driver.quit();
     }
+
     @Nested
-    class HomePageTestUI{
+    class HomePageTestUI {
         HomePage homePage;
+
         @BeforeEach
-        void setUp(){
+        void setUp() {
             homePage = new HomePage(driver);
         }
+
         @Test
         @DisplayName("Should access power register page")
         void shouldAccessPowerRegisterPage() {
@@ -46,6 +51,7 @@ class MainTest {
             assertThat(currentUrl).contains("/cadastro");
 
         }
+
         @Test
         @DisplayName("test if components of page overlap")
         void componentsShouldNotOverlap() {
@@ -72,12 +78,12 @@ class MainTest {
     }
 
     @Nested
-    class CadastrarPageTestUI{
+    class CadastrarPageTestUI {
         CadastrarPage cadastrarPage;
 
         @BeforeEach
-        void setUp(){
-            cadastrarPage  = new CadastrarPage(driver);
+        void setUp() {
+            cadastrarPage = new CadastrarPage(driver);
         }
 
     }
@@ -85,82 +91,102 @@ class MainTest {
     @Nested
     class CRUDtests {
         private Faker faker;
+
         @BeforeEach
         void setUp() {
             driver.get("https://site-tc1.vercel.app/");
             faker = new Faker();
         }
 
-//        private void createNewPower() {
-//
-//        }
+        void cadastrarPoder(String nome, String descricao, String efeitosColaterais, int nota) {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+            WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
+            link.click();
+
+            WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
+            WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
+            WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
+            WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+
+            nameInput.sendKeys(nome);
+            descriptionInput.sendKeys(descricao);
+            efeitosColateraisInput.sendKeys(efeitosColaterais);
+            new Select(notaSelect).selectByValue(String.valueOf(nota));
+
+            WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
+            submitButton.click();
+
+            Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+            alert.accept();
+        }
+
+        WebElement encontrarPoder(String nomeOriginal) {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+            driver.get("https://site-tc1.vercel.app/");
+            WebElement powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
+            List<WebElement> powers = powerList.findElements(By.className("post"));
+
+            return powers.stream().filter(power -> {
+                String powerTitle = power.findElement(By.className("post-title")).getText();
+                return powerTitle.equals(nomeOriginal);
+            }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
+        }
+
+        void editarPoder(WebElement power, String nome, String descricao, String efeitosColaterais, int nota) {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+            WebElement editLink = power.findElement(By.linkText("Editar"));
+            editLink.click();
+
+            WebElement nameEditInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
+            WebElement descriptionEditInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
+            WebElement efeitosColateraisEditInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
+            WebElement notaEditSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+
+            nameEditInput.clear();
+            nameEditInput.sendKeys(nome);
+            descriptionEditInput.clear();
+            descriptionEditInput.sendKeys(descricao);
+            efeitosColateraisEditInput.clear();
+            efeitosColateraisEditInput.sendKeys(efeitosColaterais);
+            new Select(notaEditSelect).selectByValue(String.valueOf(nota));
+
+            WebElement submitEditButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Salvar Alterações']")));
+            submitEditButton.click();
+
+            Alert alertEdit = wait.until(ExpectedConditions.alertIsPresent());
+            alertEdit.accept();
+        }
 
         @Nested
         class CreateRead {
             CadastrarPage cadastrarPage;
 
             @BeforeEach
-            void setUp(){
-                cadastrarPage  = new CadastrarPage(driver);
+            void setUp() {
+                cadastrarPage = new CadastrarPage(driver);
             }
+
             @Test
             @DisplayName("Should create a new power")
             void shouldCreateNewPower() {
-
-
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-
-                WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
-                link.click();
-
                 String nome = faker.superhero().power();
                 String descricao = faker.lorem().sentence();
                 String efeitosColaterais = faker.lorem().sentence();
                 int nota = faker.number().numberBetween(1, 6); // entre 1 e 5
 
-                WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNomePoder()));
-                WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getDescricao()));
-                WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getEfeitosColaterais()));
-                WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNota()));
+                cadastrarPoder(nome, descricao, efeitosColaterais, nota);
 
-                nameInput.sendKeys(nome);
-                descriptionInput.sendKeys(descricao);
-                efeitosColateraisInput.sendKeys(efeitosColaterais);
-                new Select(notaSelect).selectByValue(String.valueOf(nota));
+                WebElement powerToVerify = encontrarPoder(nome);
 
-                WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
-                submitButton.click();
+                String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
+                String powerDescription = powerToVerify.findElement(By.className("post-excerpt")).getText();
+                String powerEfeitosColaterais = powerToVerify.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
+                String powerStars = powerToVerify.findElement(By.className("stars")).getText();
 
-                Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-                String alertText = alert.getText();
-                assertTrue(alertText.contains("Poder criado com sucesso!"));
-                alert.accept();
-
-                driver.get("https://site-tc1.vercel.app/");
-
-                WebElement powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList"))); // Substitua pelo ID da lista de poderes
-                List<WebElement> powers = powerList.findElements(By.className("post")); // Supondo que cada poder é um <div> com a classe 'post'
-
-                boolean powerFound = powers.stream().anyMatch(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    String powerDescription = power.findElement(By.className("post-excerpt")).getText();
-                    String powerEfeitosColaterais = power.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
-                    String powerStars = power.findElement(By.className("stars")).getText();
-
-                    boolean titleMatches = powerTitle.equals(nome);
-                    boolean descriptionMatches = powerDescription.equals(descricao);
-                    boolean efeitosColateraisMatch = powerEfeitosColaterais.contains(efeitosColaterais);
-                    boolean starsMatch = powerStars.length() == nota;
-
-                    if (titleMatches && descriptionMatches && efeitosColateraisMatch && starsMatch) {
-                        WebElement editButton = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Editar")));
-                        WebElement deleteButton = power.findElement(By.xpath(".//div[@class='post-actions']/button[@data-action='delete']"));
-                        return editButton != null && deleteButton != null;
-                    }
-                    return false;
-                });
-
-                assertTrue(powerFound, "O novo poder foi encontrado na lista com os botões Editar e Excluir.");
+                assertTrue(powerTitle.equals(nome));
+                assertTrue(powerDescription.equals(descricao));
+                assertTrue(powerEfeitosColaterais.contains(efeitosColaterais));
+                assertTrue(powerStars.length() == nota);
             }
         }
 
@@ -169,316 +195,132 @@ class MainTest {
             @Test
             @DisplayName("Should edit all fields of a power")
             void shouldEditAllFieldsOfPower() {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-
-                WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
-                link.click();
-
                 String nomeOriginal = faker.superhero().power();
                 String descricaoOriginal = faker.lorem().sentence();
                 String efeitosColateraisOriginal = faker.lorem().sentence();
                 int notaOriginal = faker.number().numberBetween(1, 6);
 
-                WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-                WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
-                WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
-                WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 
-                nameInput.sendKeys(nomeOriginal);
-                descriptionInput.sendKeys(descricaoOriginal);
-                efeitosColateraisInput.sendKeys(efeitosColateraisOriginal);
-                new Select(notaSelect).selectByValue(String.valueOf(notaOriginal));
+                WebElement powerToEdit = encontrarPoder(nomeOriginal);
 
-                WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
-                submitButton.click();
-
-                Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-                alert.accept();
-
-                driver.get("https://site-tc1.vercel.app/");
-
-                WebElement powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                List<WebElement> powers = powerList.findElements(By.className("post"));
-
-                WebElement powerToEdit = powers.stream().filter(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    return powerTitle.equals(nomeOriginal);
-                }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
-
-                WebElement editLink = powerToEdit.findElement(By.linkText("Editar"));
-                editLink.click();
-
-                // Edição dos campos
                 String nomeEditado = faker.superhero().power();
                 String descricaoEditada = faker.lorem().sentence();
                 String efeitosColateraisEditados = faker.lorem().sentence();
                 int notaEditada = faker.number().numberBetween(1, 6);
 
-                WebElement nameEditInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-                WebElement descriptionEditInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
-                WebElement efeitosColateraisEditInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
-                WebElement notaEditSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+                editarPoder(powerToEdit, nomeEditado, descricaoEditada, efeitosColateraisEditados, notaEditada);
 
-                nameEditInput.clear();
-                nameEditInput.sendKeys(nomeEditado);
-                descriptionEditInput.clear();
-                descriptionEditInput.sendKeys(descricaoEditada);
-                efeitosColateraisEditInput.clear();
-                efeitosColateraisEditInput.sendKeys(efeitosColateraisEditados);
-                new Select(notaEditSelect).selectByValue(String.valueOf(notaEditada));
+                WebElement powerToVerify = encontrarPoder(nomeEditado);
 
-                WebElement submitEditButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Salvar Alterações']")));
-                submitEditButton.click();
+                String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
+                String powerDescription = powerToVerify.findElement(By.className("post-excerpt")).getText();
+                String powerEfeitosColaterais = powerToVerify.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
+                String powerStars = powerToVerify.findElement(By.className("stars")).getText();
 
-                Alert alertEdit = wait.until(ExpectedConditions.alertIsPresent());
-                alertEdit.accept();
-
-                driver.get("https://site-tc1.vercel.app/");
-
-                WebElement powerListAfterEdit = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                List<WebElement> powersAfterEdit = powerListAfterEdit.findElements(By.className("post"));
-
-                boolean powerEditedFound = powersAfterEdit.stream().anyMatch(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    String powerDescription = power.findElement(By.className("post-excerpt")).getText();
-                    String powerEfeitosColaterais = power.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
-                    String powerStars = power.findElement(By.className("stars")).getText();
-
-                    return powerTitle.equals(nomeEditado) &&
-                            powerDescription.equals(descricaoEditada) &&
-                            powerEfeitosColaterais.contains(efeitosColateraisEditados) &&
-                            powerStars.length() == notaEditada;
-                });
-
-                assertTrue(powerEditedFound, "O poder editado foi encontrado na lista.");
+                assertTrue(powerTitle.equals(nomeEditado));
+                assertTrue(powerDescription.equals(descricaoEditada));
+                assertTrue(powerEfeitosColaterais.contains(efeitosColateraisEditados));
+                assertTrue(powerStars.length() == notaEditada);
             }
 
             @Test
             @DisplayName("Should edit only the power name")
             void shouldEditPowerName() {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-
-                WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
-                link.click();
-
                 String nomeOriginal = faker.superhero().power();
                 String descricaoOriginal = faker.lorem().sentence();
                 String efeitosColateraisOriginal = faker.lorem().sentence();
                 int notaOriginal = faker.number().numberBetween(1, 6);
 
-                WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-                WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
-                WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
-                WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 
-                nameInput.sendKeys(nomeOriginal);
-                descriptionInput.sendKeys(descricaoOriginal);
-                efeitosColateraisInput.sendKeys(efeitosColateraisOriginal);
-                new Select(notaSelect).selectByValue(String.valueOf(notaOriginal));
-
-                WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
-                submitButton.click();
-
-                Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-                alert.accept();
-
-                driver.get("https://site-tc1.vercel.app/");
-
-                WebElement powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                List<WebElement> powers = powerList.findElements(By.className("post"));
-
-                WebElement powerToEdit = powers.stream().filter(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    return powerTitle.equals(nomeOriginal);
-                }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
-
-                WebElement editLink = powerToEdit.findElement(By.linkText("Editar"));
-                editLink.click();
+                WebElement powerToEdit = encontrarPoder(nomeOriginal);
 
                 String nomeEditado = faker.superhero().power();
 
-                WebElement nameEditInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-                nameEditInput.clear();
-                nameEditInput.sendKeys(nomeEditado);
+                editarPoder(powerToEdit, nomeEditado, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 
-                WebElement submitEditButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Salvar Alterações']")));
-                submitEditButton.click();
+                WebElement powerToVerify = encontrarPoder(nomeEditado);
 
-                Alert alertEdit = wait.until(ExpectedConditions.alertIsPresent());
-                alertEdit.accept();
+                String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
 
-                driver.get("https://site-tc1.vercel.app/");
-
-                WebElement powerListAfterEdit = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                List<WebElement> powersAfterEdit = powerListAfterEdit.findElements(By.className("post"));
-
-                boolean powerEditedFound = powersAfterEdit.stream().anyMatch(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    return powerTitle.equals(nomeEditado);
-                });
-
-                assertTrue(powerEditedFound, "O poder editado foi encontrado na lista.");
+                assertTrue(powerTitle.equals(nomeEditado));
             }
 
             @Test
             @DisplayName("Should edit the power note twice")
             void shouldEditPowerNoteTwice() {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-
-                WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
-                link.click();
-
                 String nomeOriginal = faker.superhero().power();
                 String descricaoOriginal = faker.lorem().sentence();
                 String efeitosColateraisOriginal = faker.lorem().sentence();
                 int notaOriginal = faker.number().numberBetween(1, 6);
 
-                WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-                WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
-                WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
-                WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+                cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 
-                nameInput.sendKeys(nomeOriginal);
-                descriptionInput.sendKeys(descricaoOriginal);
-                efeitosColateraisInput.sendKeys(efeitosColateraisOriginal);
-                new Select(notaSelect).selectByValue(String.valueOf(notaOriginal));
+                WebElement powerToEdit = encontrarPoder(nomeOriginal);
 
-                WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
-                submitButton.click();
-
-                Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-                alert.accept();
-
-                driver.get("https://site-tc1.vercel.app/");
-
-                WebElement powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                List<WebElement> powers = powerList.findElements(By.className("post"));
-
-                WebElement powerToEdit = powers.stream().filter(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    return powerTitle.equals(nomeOriginal);
-                }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
-
-                WebElement editLink = powerToEdit.findElement(By.linkText("Editar"));
-                editLink.click();
-
-                // Primeira alteração da nota
                 int notaEditada1 = faker.number().numberBetween(1, 6);
                 while (notaEditada1 == notaOriginal) {
                     notaEditada1 = faker.number().numberBetween(1, 6);
                 }
 
-                WebElement notaEditSelect1 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
-                new Select(notaEditSelect1).selectByValue(String.valueOf(notaEditada1));
-
-                WebElement submitEditButton1 = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Salvar Alterações']")));
-                submitEditButton1.click();
-
-                Alert alertEdit1 = wait.until(ExpectedConditions.alertIsPresent());
-                alertEdit1.accept();
-
-                driver.get("https://site-tc1.vercel.app/");
-
-                // Segunda alteração da nota
-                powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                powers = powerList.findElements(By.className("post"));
-
-                powerToEdit = powers.stream().filter(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    return powerTitle.equals(nomeOriginal);
-                }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
-
-                editLink = powerToEdit.findElement(By.linkText("Editar"));
-                editLink.click();
+                editarPoder(powerToEdit, nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaEditada1);
+                powerToEdit = encontrarPoder(nomeOriginal);
 
                 int notaEditada2 = faker.number().numberBetween(1, 6);
                 while (notaEditada2 == notaEditada1) {
                     notaEditada2 = faker.number().numberBetween(1, 6);
                 }
 
-                WebElement notaEditSelect2 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
-                new Select(notaEditSelect2).selectByValue(String.valueOf(notaEditada2));
+                editarPoder(powerToEdit, nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaEditada2);
 
-                WebElement submitEditButton2 = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Salvar Alterações']")));
-                submitEditButton2.click();
+                WebElement powerToVerify = encontrarPoder(nomeOriginal);
 
-                Alert alertEdit2 = wait.until(ExpectedConditions.alertIsPresent());
-                alertEdit2.accept();
+                String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
+                String powerDescription = powerToVerify.findElement(By.className("post-excerpt")).getText();
+                String powerEfeitosColaterais = powerToVerify.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
+                String powerStars = powerToVerify.findElement(By.className("stars")).getText();
 
-                driver.get("https://site-tc1.vercel.app/");
-
-                WebElement powerListAfterEdit = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                List<WebElement> powersAfterEdit = powerListAfterEdit.findElements(By.className("post"));
-
-                int finalNotaEditada = notaEditada2;
-                boolean powerEditedTwiceFound = powersAfterEdit.stream().anyMatch(power -> {
-                    String powerTitle = power.findElement(By.className("post-title")).getText();
-                    String powerDescription = power.findElement(By.className("post-excerpt")).getText();
-                    String powerEfeitosColaterais = power.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
-                    String powerStars = power.findElement(By.className("stars")).getText();
-
-                    return powerTitle.equals(nomeOriginal) &&
-                            powerDescription.equals(descricaoOriginal) &&
-                            powerEfeitosColaterais.contains(efeitosColateraisOriginal) &&
-                            powerStars.length() == finalNotaEditada;
-                });
-
-                assertTrue(powerEditedTwiceFound, "O poder foi encontrado na lista com a nota editada duas vezes");
+                assertTrue(powerTitle.equals(nomeOriginal));
+                assertTrue(powerDescription.equals(descricaoOriginal));
+                assertTrue(powerEfeitosColaterais.contains(efeitosColateraisOriginal));
+                assertTrue(powerStars.length() == notaEditada2);
             }
 
             @Nested
             class Delete {
-
                 @Test
                 @DisplayName("Should delete a power")
                 void shouldDeletePower() {
-                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-
-                    WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
-                    link.click();
-
                     String nomeOriginal = faker.superhero().power();
                     String descricaoOriginal = faker.lorem().sentence();
                     String efeitosColateraisOriginal = faker.lorem().sentence();
                     int notaOriginal = faker.number().numberBetween(1, 6);
 
-                    WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-                    WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
-                    WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
-                    WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+                    cadastrarPoder(nomeOriginal, descricaoOriginal, efeitosColateraisOriginal, notaOriginal);
 
-                    nameInput.sendKeys(nomeOriginal);
-                    descriptionInput.sendKeys(descricaoOriginal);
-                    efeitosColateraisInput.sendKeys(efeitosColateraisOriginal);
-                    new Select(notaSelect).selectByValue(String.valueOf(notaOriginal));
+                    WebElement powerToDelete = encontrarPoder(nomeOriginal);
 
-                    WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
-                    submitButton.click();
+                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+                    WebElement deleteButton = powerToDelete.findElement(By.xpath(".//div[@class='post-actions']/button[@data-action='delete']"));
+                    deleteButton.click();
 
                     Alert alert = wait.until(ExpectedConditions.alertIsPresent());
                     alert.accept();
 
-                    driver.get("https://site-tc1.vercel.app/");
+                    driver.navigate().refresh();
 
-                    WebElement powerList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("powersList")));
-                    List<WebElement> powers = powerList.findElements(By.className("post"));
-
-                    WebElement powerToDelete = powers.stream().filter(power -> {
-                        String powerTitle = power.findElement(By.className("post-title")).getText();
-                        return powerTitle.equals(nomeOriginal);
-                    }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
-
-                    WebElement deleteButton = powerToDelete.findElement(By.xpath(".//div[@class='post-actions']/button[@data-action='delete']"));
-                    deleteButton.click();
-
-                    Alert deleteAlert = wait.until(ExpectedConditions.alertIsPresent());
-                    deleteAlert.accept();
-
-                    assertNotNull(deleteAlert, "O alerta de confirmação de exclusão foi aceito com sucesso.");
-
+                    assertThrows(AssertionError.class, () -> {
+                        try {
+                            encontrarPoder(nomeOriginal);
+                        } catch (TimeoutException e) {
+                            throw new AssertionError("Poder original não encontrado após exclusão");
+                        }
+                    });
                 }
             }
         }
     }
 }
+
 
