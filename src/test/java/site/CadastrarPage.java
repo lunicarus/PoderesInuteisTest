@@ -12,6 +12,7 @@ public class CadastrarPage {
     private final By descricao = By.id("descricao");
     private final By efeitosColaterais = By.id("efeitos_colaterais");
     private final By nota = By.id("nota");
+    private final By submitButtom = By.xpath("//button[@type=\"submit\" and text()=\"Cadastrar Poder\"]");
 
     public By getNomePoder() {
         return nomePoder;
@@ -27,6 +28,10 @@ public class CadastrarPage {
 
     public By getNota() {
         return nota;
+    }
+
+    public By getSubmitButtom() {
+        return submitButtom;
     }
 
     public CadastrarPage(WebDriver driver){
