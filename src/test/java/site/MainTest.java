@@ -99,21 +99,23 @@ class MainTest {
         }
 
         void cadastrarPoder(String nome, String descricao, String efeitosColaterais, int nota) {
+            CadastrarPage cadastrarPage = new CadastrarPage(driver);
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-            WebElement link = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cadastrar")));
+
+            WebElement link = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
             link.click();
 
-            WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome_do_poder")));
-            WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("descricao")));
-            WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("efeitos_colaterais")));
-            WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nota")));
+            WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNomePoder()));
+            WebElement descriptionInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getDescricao()));
+            WebElement efeitosColateraisInput = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getEfeitosColaterais()));
+            WebElement notaSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(cadastrarPage.getNota()));
 
             nameInput.sendKeys(nome);
             descriptionInput.sendKeys(descricao);
             efeitosColateraisInput.sendKeys(efeitosColaterais);
             new Select(notaSelect).selectByValue(String.valueOf(nota));
 
-            WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit' and text()='Cadastrar Poder']")));
+            WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(cadastrarPage.getSubmitButtom()));
             submitButton.click();
 
             Alert alert = wait.until(ExpectedConditions.alertIsPresent());
@@ -129,7 +131,7 @@ class MainTest {
             return powers.stream().filter(power -> {
                 String powerTitle = power.findElement(By.className("post-title")).getText();
                 return powerTitle.equals(nomeOriginal);
-            }).findFirst().orElseThrow(() -> new AssertionError("Poder original não encontrado"));
+            }).findFirst().orElseThrow(() -> new AssertionError("Poder não encontrado"));
         }
 
         void editarPoder(WebElement power, String nome, String descricao, String efeitosColaterais, int nota) {
@@ -188,6 +190,37 @@ class MainTest {
                 assertTrue(powerEfeitosColaterais.contains(efeitosColaterais));
                 assertTrue(powerStars.length() == nota);
             }
+
+//            @Test
+//            @DisplayName("Should not allow adding two powers with the same name")
+//            void shouldNotAllowAddingTwoPowersWithSameName() {
+//                String nome = faker.superhero().power();
+//                String descricao1 = faker.lorem().sentence();
+//                String descricao2 = faker.lorem().sentence();
+//                String efeitosColaterais1 = faker.lorem().sentence();
+//                String efeitosColaterais2 = faker.lorem().sentence();
+//                int nota1 = faker.number().numberBetween(1, 6); // entre 1 e 5
+//                int nota2 = faker.number().numberBetween(1, 6); // entre 1 e 5
+//
+//                cadastrarPoder(nome, descricao1, efeitosColaterais1, nota1);
+//
+//                cadastrarPoder(nome, descricao2, efeitosColaterais2, nota2);
+//
+//                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+//                try {
+//                    Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+//                    String alertText = alert.getText();
+//                    alert.accept();
+//                    assertTrue(alertText.contains("existe"), "Não ha uma mensagem de erro informando que o poder já existe");
+//                } catch (TimeoutException e) {
+//                    List<WebElement> powers = driver.findElements(By.className("post"));
+//                    long count = powers.stream()
+//                            .filter(power -> power.findElement(By.className("post-title")).getText().equals(nome))
+//                            .count();
+//                    assertEquals(1, count, "Não podem existir dois poderes com o mesmo nome");
+//                }
+//            }
+
         }
 
         @Nested
@@ -287,6 +320,8 @@ class MainTest {
                 assertTrue(powerStars.length() == notaEditada2);
             }
 
+        }
+
             @Nested
             class Delete {
                 @Test
@@ -314,13 +349,13 @@ class MainTest {
                         try {
                             encontrarPoder(nomeOriginal);
                         } catch (TimeoutException e) {
-                            throw new AssertionError("Poder original não encontrado após exclusão");
+                            throw new AssertionError("O poder foi excluído");
                         }
                     });
                 }
             }
         }
     }
-}
+
 
 
