@@ -11,7 +11,10 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,17 +36,24 @@ class MainTest {
     @Nested
     class HomePageTestUI {
         HomePage homePage;
-
+        Dimension[] sizes;
+        WebDriverWait wait;
         @BeforeEach
         void setUp() {
             homePage = new HomePage(driver);
+             sizes = new Dimension[]{
+                    new Dimension(320, 480),
+                    new Dimension(480, 320),
+                    new Dimension(768, 1024),
+                    new Dimension(1024, 768),
+                    new Dimension(1366, 768),
+                    new Dimension(1920, 1080)
+            };wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         }
 
         @Test
         @DisplayName("Should access power register page")
         void shouldAccessPowerRegisterPage() {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
             WebElement link = wait.until(ExpectedConditions.elementToBeClickable(homePage.getCadastrarButtom()));
             link.click();
 
@@ -53,9 +63,42 @@ class MainTest {
         }
 
         @Test
-        @DisplayName("test if components of page overlap")
-        void componentsShouldNotOverlap() {
-            Dimension[] sizes = {
+        @DisplayName("home page components shouldn't overlap")
+        void homePageComponentsShouldNotOverlap() {
+            List<Rectangle> componentsLocations = Arrays.asList(
+                    homePage.getCadastrarButtomLocation(),
+                    homePage.getHeaderLocation(),
+                    homePage.getPowersListLocation()
+            );
+            Optional<Rectangle> overlapingComponents = Optional.empty();
+            for (Dimension size : sizes) {
+
+                driver.manage().window().setSize(size);
+                driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
+
+                overlapingComponents = componentsLocations.stream()
+                        .filter(Objects::nonNull)
+                        .reduce(new ComponentReducer(), (reducer, componentLocation) -> {
+                            if (reducer.hasSeenLocation(componentLocation))
+                                reducer.setOverlappingComponent(componentLocation);
+                            reducer.addLocation(componentLocation);
+                            return reducer;
+                        }, ComponentReducer::combine)
+                        .getOverlappingComponent();
+            }
+            assertEquals(overlapingComponents, Optional.empty());
+        }
+
+        }
+    @Nested
+    class CadastrarPageTestUI {
+        CadastrarPage cadastrarPage;
+        Dimension[] sizes;
+        WebDriverWait wait;
+        @BeforeEach
+        void setUp() {
+            cadastrarPage = new CadastrarPage(driver);
+            sizes = new Dimension[]{
                     new Dimension(320, 480),
                     new Dimension(480, 320),
                     new Dimension(768, 1024),
@@ -63,30 +106,37 @@ class MainTest {
                     new Dimension(1366, 768),
                     new Dimension(1920, 1080)
             };
+        }
+
+        @Test
+        @DisplayName("Cadastrar page components shouldn't overlap")
+        void CadastrarPageComponentsShouldNotOverlap() {
+            List<Rectangle> componentsLocations = Arrays.asList(
+//                    cadastrarPage.getCadastrarButtomLocation(),
+//                    cadastrarPage.getHeaderLocation(),
+//                    cadastrarPage.getPowersListLocation()
+            );
+            Optional<Rectangle> overlapingComponents = Optional.empty();
             for (Dimension size : sizes) {
+
                 driver.manage().window().setSize(size);
                 driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
 
-                assertNotSame(homePage.getHeaderLocation(), homePage.getCadastrarButtomLocation());
-
-                assertNotSame(homePage.getPowersListLocation(), homePage.getCadastrarButtomLocation());
-
-                assertNotSame(homePage.getHeaderLocation(), homePage.getPowersListLocation());
+                overlapingComponents = componentsLocations.stream()
+                        .filter(Objects::nonNull)
+                        .reduce(new ComponentReducer(), (reducer, componentLocation) -> {
+                            if (reducer.hasSeenLocation(componentLocation))
+                                reducer.setOverlappingComponent(componentLocation);
+                            reducer.addLocation(componentLocation);
+                            return reducer;
+                        }, ComponentReducer::combine)
+                        .getOverlappingComponent();
             }
-
+            assertEquals(overlapingComponents, Optional.empty());
         }
     }
 
-    @Nested
-    class CadastrarPageTestUI {
-        CadastrarPage cadastrarPage;
 
-        @BeforeEach
-        void setUp() {
-            cadastrarPage = new CadastrarPage(driver);
-        }
-
-    }
 
     @Nested
     class CRUDtests {
@@ -185,10 +235,10 @@ class MainTest {
                 String powerEfeitosColaterais = powerToVerify.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
                 String powerStars = powerToVerify.findElement(By.className("stars")).getText();
 
-                assertTrue(powerTitle.equals(nome));
-                assertTrue(powerDescription.equals(descricao));
+                assertEquals(powerTitle, nome);
+                assertEquals(powerDescription, descricao);
                 assertTrue(powerEfeitosColaterais.contains(efeitosColaterais));
-                assertTrue(powerStars.length() == nota);
+                assertEquals(powerStars.length(), nota);
             }
 
 //            @Test
@@ -251,10 +301,10 @@ class MainTest {
                 String powerEfeitosColaterais = powerToVerify.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
                 String powerStars = powerToVerify.findElement(By.className("stars")).getText();
 
-                assertTrue(powerTitle.equals(nomeEditado));
-                assertTrue(powerDescription.equals(descricaoEditada));
+                assertEquals(powerTitle, nomeEditado);
+                assertEquals(powerDescription, descricaoEditada);
                 assertTrue(powerEfeitosColaterais.contains(efeitosColateraisEditados));
-                assertTrue(powerStars.length() == notaEditada);
+                assertEquals(powerStars.length(), notaEditada);
             }
 
             @Test
@@ -277,7 +327,7 @@ class MainTest {
 
                 String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
 
-                assertTrue(powerTitle.equals(nomeEditado));
+                assertEquals(powerTitle, nomeEditado);
             }
 
 //            @Test
@@ -341,10 +391,10 @@ class MainTest {
                 String powerEfeitosColaterais = powerToVerify.findElement(By.xpath(".//p[strong[text()='Efeitos Colaterais:']]")).getText();
                 String powerStars = powerToVerify.findElement(By.className("stars")).getText();
 
-                assertTrue(powerTitle.equals(nomeOriginal));
-                assertTrue(powerDescription.equals(descricaoOriginal));
+                assertEquals(powerTitle, nomeOriginal);
+                assertEquals(powerDescription, descricaoOriginal);
                 assertTrue(powerEfeitosColaterais.contains(efeitosColateraisOriginal));
-                assertTrue(powerStars.length() == notaEditada2);
+                assertEquals(powerStars.length(), notaEditada2);
             }
 
 //            @Test
@@ -392,8 +442,8 @@ class MainTest {
         }
 
     }
+    }
 
-}
 
 
 
