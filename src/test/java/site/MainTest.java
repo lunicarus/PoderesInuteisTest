@@ -247,7 +247,7 @@ class MainTest {
             }
 
             @Test
-            @DisplayName("Should not allow creating a new power with empty fields")
+            @DisplayName("Should not allow creating a power with empty fields")
             void shouldNotAllowCreatingPowerWithEmptyFields() {
                 String nome = faker.superhero().power();
                 String descricao = "";
@@ -285,7 +285,7 @@ class MainTest {
                     long count = powers.stream()
                             .filter(power -> power.findElement(By.className("post-title")).getText().equals(nome))
                             .count();
-                    assertEquals(1, count, "Não podem existir dois poderes com o mesmo nome");
+                    assertEquals(1, count);
                 }
             }
 
