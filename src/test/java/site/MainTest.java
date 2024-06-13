@@ -103,6 +103,31 @@ class MainTest {
         }
     }
 
+    @Nested
+    class EditarPageTestUI{
+        EditarPage editarPage;
+        @BeforeEach
+        void setUp() {
+            editarPage = new EditarPage(driver);
+        }
+        @Test
+        @DisplayName("Editar page components shouldn't overlap")
+        void EditarPageComponentsShouldNotOverlap() {
+            List<Rectangle> componentsLocations = Arrays.asList(
+                    editarPage.getCadastrarButtomLocation(),
+                    editarPage.getHeaderLocation(),
+                    editarPage.getEfeitosColateraisLocation(),
+                    editarPage.getNotaLocation(),
+                    editarPage.getSubmitButtomLocation(),
+                    editarPage.getDescricaoLocation(),
+                    editarPage.getNomePoderLocation()
+            );
+            Optional<Rectangle> overlapingComponents = Optional.empty();
+            overlapingComponents = getOverlapingComponents(componentsLocations, overlapingComponents);
+            assertEquals(Optional.empty(), overlapingComponents);
+        }
+    }
+
     private Optional<Rectangle> getOverlapingComponents(List<Rectangle> componentsLocations, Optional<Rectangle> overlapingComponents) {
         Dimension[] sizes = new Dimension[]{
                 //        new Dimension(360, 740),
