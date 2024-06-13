@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-class ComponentReducer {
+class ComponentLocationValidator {
     private Set<Rectangle> seenLocations = new HashSet<>();
     private Rectangle overlappingComponent;
 
@@ -43,7 +43,7 @@ class ComponentReducer {
         return Optional.ofNullable(overlappingComponent);
     }
 
-    public ComponentReducer combine(ComponentReducer other) {
+    public ComponentLocationValidator combine(ComponentLocationValidator other) {
         this.seenLocations.addAll(other.seenLocations);
         if (this.overlappingComponent == null) this.overlappingComponent = other.overlappingComponent;
         return this;
