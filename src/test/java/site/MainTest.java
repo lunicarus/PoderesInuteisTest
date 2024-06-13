@@ -99,7 +99,6 @@ class MainTest {
             );
             Optional<Rectangle> overlapingComponents = Optional.empty();
             overlapingComponents = getOverlapingComponents(componentsLocations, overlapingComponents);
-            overlapingComponents.ifPresent(System.out::println);
             assertEquals(Optional.empty(), overlapingComponents);
         }
     }
