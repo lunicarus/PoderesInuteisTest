@@ -42,6 +42,7 @@ class MainTest {
         void setUp() {
             homePage = new HomePage(driver);
              sizes = new Dimension[]{
+                     new Dimension(360, 740),
                     new Dimension(320, 480),
                     new Dimension(480, 320),
                     new Dimension(768, 1024),
@@ -71,21 +72,7 @@ class MainTest {
                     homePage.getPowersListLocation()
             );
             Optional<Rectangle> overlapingComponents = Optional.empty();
-            for (Dimension size : sizes) {
-
-                driver.manage().window().setSize(size);
-                driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
-
-                overlapingComponents = componentsLocations.stream()
-                        .filter(Objects::nonNull)
-                        .reduce(new ComponentReducer(), (reducer, componentLocation) -> {
-                            if (reducer.hasSeenLocation(componentLocation))
-                                reducer.setOverlappingComponent(componentLocation);
-                            reducer.addLocation(componentLocation);
-                            return reducer;
-                        }, ComponentReducer::combine)
-                        .getOverlappingComponent();
-            }
+            overlapingComponents = getOverlapingComponents(componentsLocations,overlapingComponents);
             assertEquals(overlapingComponents, Optional.empty());
         }
 
@@ -93,49 +80,61 @@ class MainTest {
     @Nested
     class CadastrarPageTestUI {
         CadastrarPage cadastrarPage;
-        Dimension[] sizes;
         WebDriverWait wait;
         @BeforeEach
         void setUp() {
             cadastrarPage = new CadastrarPage(driver);
-            sizes = new Dimension[]{
-                    new Dimension(320, 480),
-                    new Dimension(480, 320),
-                    new Dimension(768, 1024),
-                    new Dimension(1024, 768),
-                    new Dimension(1366, 768),
-                    new Dimension(1920, 1080)
-            };
         }
 
         @Test
         @DisplayName("Cadastrar page components shouldn't overlap")
         void CadastrarPageComponentsShouldNotOverlap() {
             List<Rectangle> componentsLocations = Arrays.asList(
-//                    cadastrarPage.getCadastrarButtomLocation(),
-//                    cadastrarPage.getHeaderLocation(),
-//                    cadastrarPage.getPowersListLocation()
+                    cadastrarPage.getCadastrarButtomLocation(),
+                    cadastrarPage.getHeaderLocation(),
+                    cadastrarPage.getEfeitosColateraisLocation(),
+                    cadastrarPage.getNotaLocation(),
+                    cadastrarPage.getSubmitButtomLocation(),
+                    cadastrarPage.getDescricaoLocation(),
+                    cadastrarPage.getNomePoderLocation()
             );
             Optional<Rectangle> overlapingComponents = Optional.empty();
-            for (Dimension size : sizes) {
-
-                driver.manage().window().setSize(size);
-                driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
-
-                overlapingComponents = componentsLocations.stream()
-                        .filter(Objects::nonNull)
-                        .reduce(new ComponentReducer(), (reducer, componentLocation) -> {
-                            if (reducer.hasSeenLocation(componentLocation))
-                                reducer.setOverlappingComponent(componentLocation);
-                            reducer.addLocation(componentLocation);
-                            return reducer;
-                        }, ComponentReducer::combine)
-                        .getOverlappingComponent();
-            }
-            assertEquals(overlapingComponents, Optional.empty());
+            overlapingComponents = getOverlapingComponents(componentsLocations, overlapingComponents);
+            overlapingComponents.ifPresent(System.out::println);
+            assertEquals(Optional.empty(), overlapingComponents);
         }
     }
 
+    private Optional<Rectangle> getOverlapingComponents(List<Rectangle> componentsLocations, Optional<Rectangle> overlapingComponents) {
+        Dimension[] sizes = new Dimension[]{
+                //        new Dimension(360, 740),
+                new Dimension(320, 480),
+                new Dimension(480, 320),
+                new Dimension(768, 1024),
+                new Dimension(1024, 768),
+                new Dimension(1366, 768),
+                new Dimension(1920, 1080)
+        };
+        for (Dimension size : sizes) {
+
+            driver.manage().window().setSize(size);
+            driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
+
+            ComponentReducer componentReducer = new ComponentReducer();
+            for (Rectangle componentsLocation : componentsLocations) {
+                if (componentsLocation != null) {
+
+                    if (componentReducer.hasSeenLocation(componentsLocation)){
+                        componentReducer.setOverlappingComponent(componentsLocation);
+                        break;
+                    }
+                    componentReducer.addLocation(componentsLocation);
+                }
+            }
+            overlapingComponents = componentReducer.getOverlappingComponent();
+        }
+        return overlapingComponents;
+    }
 
 
     @Nested
