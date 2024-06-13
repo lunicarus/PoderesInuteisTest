@@ -13,7 +13,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -80,7 +79,7 @@ class MainTest {
     @Nested
     class CadastrarPageTestUI {
         CadastrarPage cadastrarPage;
-        WebDriverWait wait;
+
         @BeforeEach
         void setUp() {
             cadastrarPage = new CadastrarPage(driver);
@@ -120,18 +119,18 @@ class MainTest {
             driver.manage().window().setSize(size);
             driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
 
-            ComponentReducer componentReducer = new ComponentReducer();
+            ComponentLocationValidator componentLocationValidator = new ComponentLocationValidator();
             for (Rectangle componentsLocation : componentsLocations) {
                 if (componentsLocation != null) {
 
-                    if (componentReducer.hasSeenLocation(componentsLocation)){
-                        componentReducer.setOverlappingComponent(componentsLocation);
+                    if (componentLocationValidator.hasSeenLocation(componentsLocation)){
+                        componentLocationValidator.setOverlappingComponent(componentsLocation);
                         break;
                     }
-                    componentReducer.addLocation(componentsLocation);
+                    componentLocationValidator.addLocation(componentsLocation);
                 }
             }
-            overlapingComponents = componentReducer.getOverlappingComponent();
+            overlapingComponents = componentLocationValidator.getOverlappingComponent();
         }
         return overlapingComponents;
     }
@@ -253,9 +252,7 @@ class MainTest {
                 String efeitosColaterais = faker.lorem().sentence();
                 int nota = faker.number().numberBetween(1, 6);
 
-                assertThrows(IllegalStateException.class, () -> {
-                    cadastrarPoder(nome, descricao, efeitosColaterais, nota);
-                });
+                assertThrows(IllegalStateException.class, () -> cadastrarPoder(nome, descricao, efeitosColaterais, nota));
             }
 
             @Test //não passa
@@ -370,7 +367,7 @@ class MainTest {
                 WebElement powerToVerify = encontrarPoder(nomeOriginal);
 
                 String powerTitle = powerToVerify.findElement(By.className("post-title")).getText();
-                assertTrue(powerTitle.equals(nomeOriginal), "O nome do poder original não pode ser alterado para um nome existente");
+                assertEquals(powerTitle, nomeOriginal, "O nome do poder original não pode ser alterado para um nome existente");
             }
 
             @Test
@@ -436,9 +433,7 @@ class MainTest {
 
                 String efeitosColateraisEditados = "";
 
-                assertThrows(TimeoutException.class, () -> {
-                    editarPoder(powerToEdit, nomeOriginal, descricaoOriginal, efeitosColateraisEditados, notaOriginal);
-                });
+                assertThrows(TimeoutException.class, () -> editarPoder(powerToEdit, nomeOriginal, descricaoOriginal, efeitosColateraisEditados, notaOriginal));
             }
 
         }
