@@ -1,5 +1,6 @@
 package site;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebDriver;
 
 public class EditarPage {
@@ -11,7 +12,7 @@ public class EditarPage {
     private final By descricao = By.id("descricao");
     private final By efeitosColaterais = By.id("efeitos_colaterais");
     private final By nota = By.id("nota");
-    private final By submitButtom = By.xpath("//button[@type=\"submit\" and text()=\"Salvar Alterções\"]");
+    private final By submitButtom = By.xpath("//button[@type=\"submit\" and text()=\"Salvar Alterações\"]");
 
     public By getNomePoder() {
         return nomePoder;
@@ -40,11 +41,31 @@ public class EditarPage {
 
     private void validateEditarPage(WebDriver driver) {
         this.driver = driver;
-        driver.get("https://site-tc1.vercel.app/cadastro");
+        driver.get("https://site-tc1.vercel.app/editar/0");
         if (!driver.getCurrentUrl().contains("https://site-tc1.vercel.app/editar/")) {
             throw new IllegalStateException("This is not the editar Page! \n" +
                     "The current page is: " + driver.getCurrentUrl());
         }
     }
-
+    public Rectangle getCadastrarButtomLocation() {
+        return driver.findElement(cadastrarButtom).getRect();
+    }
+    public Rectangle getHeaderLocation() {
+        return driver.findElement(header).getRect();
+    }
+    public Rectangle getEfeitosColateraisLocation() {
+        return driver.findElement(efeitosColaterais).getRect();
+    }
+    public Rectangle getNomePoderLocation() {
+        return driver.findElement(nomePoder).getRect();
+    }
+    public Rectangle getDescricaoLocation() {
+        return driver.findElement(descricao).getRect();
+    }
+    public  Rectangle getNotaLocation() {
+        return driver.findElement(nota).getRect();
+    }
+    public Rectangle getSubmitButtomLocation() {
+        return driver.findElement(submitButtom).getRect();
+    }
 }
